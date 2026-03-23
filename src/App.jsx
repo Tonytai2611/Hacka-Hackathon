@@ -5,28 +5,27 @@ import "./App.css";
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════════
 const CONFIG = {
-  // TODO: Set to true to use real API endpoints instead of simulation
-  USE_REAL_API: false,
+  USE_REAL_API: true,
 
-  // TODO: Replace with your actual API Gateway endpoints
-  SCORE_ENDPOINT:     "https://YOUR_API_GATEWAY/score",          // POST: single tx, returns {score, cluster, rule_applied, result}
-  METRICS_ENDPOINT:   "https://YOUR_API_GATEWAY/metrics",        // GET:  returns {fn_count, fpr_no_rule, fnr_no_rule, fpr_with_rule, fnr_with_rule}
-  RULE_ENDPOINT:      "https://YOUR_API_GATEWAY/rule",           // GET:  returns {rule_text, rule_generated_at, cohens_d}
-  DEPLOY_ENDPOINT:    "https://YOUR_API_GATEWAY/deploy",         // POST: triggers deploy flag in DynamoDB
+  // 2 endpoints 
+  GATEKEEPER_URL : 'https://1y2xabeojj.execute-api.us-east-1.amazonaws.com/analyze-transactions',
+  DEPLOY_URL     : 'https://1y2xabeojj.execute-api.us-east-1.amazonaws.com/approve-rule',
 
-  TOTAL_LEGIT_PRE:  500,
-  CLUSTER3_ROWS:    103,
-  FN_TRIGGER:        75,
+  PREFETCH_CHUNK : 20,
+  RULE_S3_KEY    : 'rules/cluster_003/iter02_20260322T161806Z.py',
+
+  TOTAL_LEGIT_PRE : 500,
+  CLUSTER3_ROWS   : 103,
+  FN_TRIGGER      : 75,
   TOTAL_LEGIT_POST: 500,
 
-  // Pre-computed offline validation metrics — fill these in from your notebook
-  BASELINE_FPR_AFTER:  "1.24%",   // TODO: replace with your computed value
-  BASELINE_FPR_DELTA:  "+0.22%",  // TODO: replace with your computed value
-  WITH_RULE_FNR:       "11.7%",   // TODO: replace with your computed value
-  WITH_RULE_FPR:       "1.24%",   // TODO: replace with your computed value
+  BASELINE_FPR_AFTER: '1.09%',
+  BASELINE_FPR_DELTA: '+0.07%',
+  WITH_RULE_FNR     : '5.8%',
+  WITH_RULE_FPR     : '1.09%',
 
-  TX_INTERVAL_MS: 180,   // default speed
-};
+  TX_INTERVAL_MS: 180,
+}
 
 // ═══════════════════════════════════════════════════════════════
 // SIMULATED RULE TEXT — replace with Bedrock output at runtime

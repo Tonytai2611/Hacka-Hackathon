@@ -22,6 +22,8 @@ export function useTransactionEngine() {
     ruleDeployed: false,
     loopStep: -1,
     generatedRule: '',
+    baselineCaughtTotal: 0,
+    newCaughtTotal: 0,
   });
 
   useEffect(() => {
@@ -186,7 +188,12 @@ export function useTransactionEngine() {
       for (let i = 0; i < 50; i++) {
         if (idx >= dataset.length) {
           clearInterval(interval);
-          setState(st => ({ ...st, ruleDeployed: true }));
+          setState(st => ({ 
+            ...st, 
+            ruleDeployed: true,
+            baselineCaughtTotal: baseCaughtCumul,
+            newCaughtTotal: newCaughtCumul
+          }));
           break;
         }
         

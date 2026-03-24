@@ -24,7 +24,7 @@ export default function MetricsPanel({ state }) {
         </div>
         <div className="metric-row">
           <span className="metric-name">Fraud Caught</span>
-          <span className="metric-value bad">{Math.max(0, state.flagCount)}</span>
+          <span className="metric-value bad">{state.ruleDeployed ? state.baselineCaughtTotal : Math.max(0, state.flagCount)}</span>
         </div>
       </div>
 
@@ -40,7 +40,7 @@ export default function MetricsPanel({ state }) {
         </div>
         <div className="metric-row">
           <span className="metric-name">Fraud Caught</span>
-          <span className="metric-value good">{state.ruleDeployed ? state.flagCount + state.blockCount : "0"}</span>
+          <span className="metric-value good">{state.ruleDeployed ? state.newCaughtTotal : "0"}</span>
         </div>
       </div>
     </>

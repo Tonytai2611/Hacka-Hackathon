@@ -2,8 +2,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 
 export default function ComparisonChart({ timelineStats }) {
   return (
-    <div className="chart-panel" className="chart-panel">
-      <div className="panel-header" style={{ marginBottom:"20px", borderBottom:"none", background:"transparent", padding:0 }}>
+    <div className="chart-panel">
+      <div className="panel-header" style={{ marginBottom:"10px", borderBottom:"none", background:"transparent", padding:0 }}>
         FINAL PERFORMANCE COMPARISON
       </div>
       <div style={{ flex: 1, width: "100%" }}>

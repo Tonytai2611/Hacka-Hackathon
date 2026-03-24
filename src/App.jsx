@@ -5,11 +5,11 @@ import ControlBar from './components/layout/ControlBar';
 import TransactionFeed from './components/dashboard/TransactionFeed';
 import MetricsPanel from './components/dashboard/MetricsPanel';
 import BaselineImpact from './components/dashboard/BaselineImpact';
-import AwsStack from './components/dashboard/AwsStack';
 import FalseNegativeMonitor from './components/agent/FalseNegativeMonitor';
 import AgenticLoopStatus from './components/agent/AgenticLoopStatus';
 import RulePanel from './components/agent/RulePanel';
 import ComparisonChart from './components/charts/ComparisonChart';
+import FprChart from './components/charts/FprChart';
 
 export default function App() {
   const engine = useTransactionEngine();
@@ -35,7 +35,10 @@ export default function App() {
               />
             </>
           ) : (
-             <ComparisonChart timelineStats={engine.timelineStats} />
+            <>
+              <ComparisonChart timelineStats={engine.timelineStats} />
+              <FprChart timelineStats={engine.timelineStats} />
+            </>
           )}
         </div>
 
@@ -43,7 +46,6 @@ export default function App() {
         <div className="right-col">
           <MetricsPanel state={engine.state} />
           <BaselineImpact ruleDeployed={engine.state.ruleDeployed} />
-          <AwsStack />
         </div>
       </div>
 

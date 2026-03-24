@@ -114,7 +114,7 @@ header {
 /* Ã¢â€â‚¬Ã¢â€â‚¬ MAIN GRID Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 .grid {
   display: grid;
-  grid-template-columns: 360px 1fr 280px;
+  grid-template-columns: 340px 1fr 310px;
   grid-template-rows: auto;
   gap: 16px;
   background: var(--border);
@@ -215,6 +215,8 @@ header {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 /* FN Counter */
@@ -463,7 +465,7 @@ header {
 .metric-name { font-size: 11px; color: var(--muted); }
 .metric-value {
   font-family: 'Syne', sans-serif;
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--heading);
   transition: all 0.5s;
@@ -598,41 +600,15 @@ header {
   color: var(--fraud);
 }
 
-.metric-block.scenario-a {
-  border-top: 3px solid var(--fraud);
-  background: linear-gradient(180deg, rgba(255, 68, 102, 0.08) 0%, var(--bg2) 100%);
-  box-shadow: 0 0 20px rgba(255, 68, 102, 0.15);
-}
-.metric-block.scenario-b {
-  border-top: 3px solid var(--safe);
-  background: linear-gradient(180deg, rgba(0, 255, 178, 0.08) 0%, var(--bg2) 100%);
-  box-shadow: 0 0 20px rgba(0, 255, 178, 0.15);
-}
 
-.metric-block.scenario-a {
-  border: 2px solid var(--fraud);
-  border-radius: 0;
-  background: #000;
-  box-shadow: 6px 6px 0px var(--fraud);
-}
-.metric-block.scenario-b {
-  border: 2px solid var(--safe);
-  border-radius: 0;
-  background: #000;
-  box-shadow: 6px 6px 0px var(--safe);
-}
-
-.metric-block.scenario-a {
+.chart-panel {
+  background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 8px;
-  border-top: 3px solid var(--fraud);
-  background: linear-gradient(180deg, rgba(255, 68, 102, 0.08) 0%, var(--bg2) 100%);
-  box-shadow: 0 0 20px rgba(255, 68, 102, 0.15);
-}
-.metric-block.scenario-b {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  border-top: 3px solid var(--safe);
-  background: linear-gradient(180deg, rgba(0, 255, 178, 0.08) 0%, var(--bg2) 100%);
-  box-shadow: 0 0 20px rgba(0, 255, 178, 0.15);
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }

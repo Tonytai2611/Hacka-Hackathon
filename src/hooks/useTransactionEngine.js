@@ -130,6 +130,10 @@ export function useTransactionEngine() {
     let newCaughtCumul = 0;
     let tStats = [];
     let currentTxs = [];
+    let baseLegitCount = 0;
+    let baseLegitFlagged = 0;
+    let newLegitCount = 0;
+    let newLegitFlagged = 0;
     
     // reset visual stats
     setTransactions([]);
@@ -139,22 +143,40 @@ export function useTransactionEngine() {
       for (let i = 0; i < 50; i++) {
         if (idx >= dataset.length) {
           clearInterval(interval);
-          setTimelineStats([...tStats]);
-          return;
+          setState(st => ({ ...st, ruleDeployed: true }));
+          break;
+        }
+        
+        const item = dataset[idx];
+        const tx = getTxResult(item, true);
+        const origTx = getTxResult(item, false);
+
+        if (origTx.result === 'FLAG' || origTx.result === 'BLOCK') baseCaughtCumul++;
+        if (tx.result === 'FLAG' || tx.result === 'BLOCK') newCaughtCumul++;
+
+        if (origTx.cluster === 'Legit') {
+           baseLegitCount++;
+           if (origTx.result === 'FLAG') baseLegitFlagged++;
+        }
+        if (tx.cluster === 'Legit') {
+           newLegitCount++;
+           if (tx.result === 'FLAG') newLegitFlagged++;
         }
 
-        const item = dataset[idx];
-        const baseTx = getTxResult(item, false);
-        if (baseTx.result === 'FLAG') baseCaughtCumul++;
-
-        const tx = getTxResult(item, true);
         if (tx.result === 'PASS') pC++;
         if (tx.result === 'FLAG') fC++;
         if (tx.result === 'BLOCK') bC++;
-        if (tx.result === 'FLAG' || tx.result === 'BLOCK') newCaughtCumul++;
 
-        if (idx % 35 === 0) {
-          tStats.push({ name: `${idx}`, caughtBase: baseCaughtCumul, caughtAfter: newCaughtCumul });
+        if (idx > 0 && idx % 35 === 0) {
+          let fprB = baseLegitCount > 0 ? (baseLegitFlagged / baseLegitCount * 100) : 0;
+          let fprA = newLegitCount > 0 ? (newLegitFlagged / newLegitCount * 100) : 0;
+          tStats.push({ 
+            name: `${idx}`, 
+            caughtBase: baseCaughtCumul, 
+            caughtAfter: newCaughtCumul,
+            fprBase: parseFloat(fprB.toFixed(2)),
+            fprAfter: parseFloat(fprA.toFixed(2))
+          });
         }
 
         currentTxs.unshift(tx);

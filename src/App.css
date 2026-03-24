@@ -82,13 +82,13 @@ header {
   background: var(--fraud);
   color: #fff;
   border-color: var(--fraud);
-  box-shadow: 0 0 12px var(--fraud);
+  /* glow removed */
 }
 .phase-step.defense.active {
   background: var(--warn);
   color: #000;
   border-color: var(--warn);
-  box-shadow: 0 0 12px var(--warn);
+  /* glow removed */
 }
 
 .header-right {

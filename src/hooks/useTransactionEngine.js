@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { CONFIG } from '../constants/config';
+import { CONFIG, SIMULATED_RULE } from '../constants/config';
 import { loadAndParseDataset } from '../lib/parseDataset';
 
 export function useTransactionEngine() {
@@ -109,7 +109,7 @@ export function useTransactionEngine() {
       if (currentFn >= CONFIG.FN_TRIGGER) {
         clearInterval(fnInterval);
         
-        let ruleCode = CONFIG.SIMULATED_RULE;
+        let ruleCode = String(SIMULATED_RULE || "");
         
         if (CONFIG.USE_REAL_API) {
           try {
@@ -125,7 +125,9 @@ export function useTransactionEngine() {
               })
             });
             const data = await response.json();
-            if (data.rule) ruleCode = data.rule;
+            if (data && data.rule) {
+               ruleCode = String(data.rule);
+            }
           } catch (e) {
             console.error('AWS Bedrock Link Failed:', e);
           }
@@ -140,13 +142,13 @@ export function useTransactionEngine() {
               loopStep: 6, 
               ruleGenerated: true, 
               phase: 3,
-              generatedRule: ruleCode.replace('{ts}', new Date().toISOString())
+              generatedRule: ruleCode.replace('{ts}', new Date().toISOString().slice(0, 19) + 'Z')
             }));
           } else {
             step++;
             setState(st => ({ ...st, loopStep: step }));
           }
-        }, CONFIG.USE_REAL_API ? 500 : 1200);
+        }, CONFIG.USE_REAL_API ? 600 : 1200);
       }
     }, 25);
   };

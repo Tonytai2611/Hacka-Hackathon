@@ -115,6 +115,8 @@ export function useTransactionEngine() {
         
         if (CONFIG.USE_REAL_API) {
           try {
+            console.group('AWS Bedrock Handshake');
+            console.log('Endpoint:', CONFIG.GATEKEEPER_URL);
             setState(st => ({ ...st, loopStep: 1 })); // Analyzing
             const response = await fetch(CONFIG.GATEKEEPER_URL, {
               method: 'POST',
@@ -127,11 +129,14 @@ export function useTransactionEngine() {
               })
             });
             const data = await response.json();
+            console.log('Raw API Result (Bedrock):', JSON.stringify(data, null, 2));
             if (data && data.rule) {
                ruleCode = String(data.rule);
             }
+            console.groupEnd();
           } catch (e) {
             console.error('AWS Bedrock Link Failed:', e);
+            console.groupEnd();
           }
         }
 
@@ -158,11 +163,14 @@ export function useTransactionEngine() {
   const deployRuleAndRerun = async () => {
     if (CONFIG.USE_REAL_API && state.generatedRule) {
       try {
-        await fetch(CONFIG.DEPLOY_URL, {
+        console.log('Sending Rule Deployment to AWS...');
+        const res = await fetch(CONFIG.DEPLOY_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rule: state.generatedRule, action: 'deploy' })
+          body: JSON.stringify({ rule_key: state.generatedRule, action: 'deploy' })
         });
+        const d = await res.json();
+        console.log('Deploy Result:', JSON.stringify(d, null, 2));
       } catch (e) {
         console.error('AWS Deployment Failed:', e);
       }

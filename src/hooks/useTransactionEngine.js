@@ -167,7 +167,7 @@ export function useTransactionEngine() {
         const res = await fetch(CONFIG.DEPLOY_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rule_key: state.generatedRule, action: 'deploy' })
+          body: JSON.stringify({ rule_code: state.generatedRule, action: 'deploy' })
         });
         const d = await res.json();
         console.log('Deploy Result:', JSON.stringify(d, null, 2));

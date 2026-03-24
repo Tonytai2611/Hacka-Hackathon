@@ -21,6 +21,7 @@ export function useTransactionEngine() {
     ruleGenerated: false,
     ruleDeployed: false,
     loopStep: -1,
+    generatedRule: '',
   });
 
   useEffect(() => {
@@ -96,33 +97,73 @@ export function useTransactionEngine() {
     }, 400);
   };
 
-  const startAgentLoop = () => {
+  const startAgentLoop = async () => {
     setState(st => ({ ...st, phase: 2, loopStep: 0, fnCount: 0 }));
     let currentFn = 0;
     
     // Animate the FN threshold 1-by-1
-    const fnInterval = setInterval(() => {
+    const fnInterval = setInterval(async () => {
       currentFn++;
       setState(st => ({ ...st, fnCount: currentFn }));
       
       if (currentFn >= CONFIG.FN_TRIGGER) {
         clearInterval(fnInterval);
         
+        let ruleCode = CONFIG.SIMULATED_RULE;
+        
+        if (CONFIG.USE_REAL_API) {
+          try {
+            setState(st => ({ ...st, loopStep: 1 })); // Analyzing
+            const response = await fetch(CONFIG.GATEKEEPER_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'analyze',
+                trigger_type: 'threshold_breach',
+                threshold: CONFIG.FN_TRIGGER,
+                sample_ids: dataset.filter(d => d.isCluster3).map(d => d.id)
+              })
+            });
+            const data = await response.json();
+            if (data.rule) ruleCode = data.rule;
+          } catch (e) {
+            console.error('AWS Bedrock Link Failed:', e);
+          }
+        }
+
         let step = 0;
         const loopInterval = setInterval(() => {
-          if (step >= 4) {
+          if (step >= 5) {
             clearInterval(loopInterval);
-            setState(st => ({ ...st, loopStep: 5, ruleGenerated: true, phase: 3 }));
+            setState(st => ({ 
+              ...st, 
+              loopStep: 6, 
+              ruleGenerated: true, 
+              phase: 3,
+              generatedRule: ruleCode.replace('{ts}', new Date().toISOString())
+            }));
           } else {
             step++;
             setState(st => ({ ...st, loopStep: step }));
           }
-        }, 1200);
+        }, CONFIG.USE_REAL_API ? 500 : 1200);
       }
     }, 25);
   };
 
-  const deployRuleAndRerun = () => {
+  const deployRuleAndRerun = async () => {
+    if (CONFIG.USE_REAL_API && state.generatedRule) {
+      try {
+        await fetch(CONFIG.DEPLOY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rule: state.generatedRule, action: 'deploy' })
+        });
+      } catch (e) {
+        console.error('AWS Deployment Failed:', e);
+      }
+    }
+
     setState(st => ({ ...st, phase: 4, ruleDeployed: true }));
     let idx = 0;
     let pC = 0, fC = 0, bC = 0;

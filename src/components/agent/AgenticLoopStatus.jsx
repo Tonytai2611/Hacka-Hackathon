@@ -1,6 +1,6 @@
 export default function AgenticLoopStatus({ loopStep }) {
   const isActive = (stepIndex) => loopStep === stepIndex;
-  const isDone = (stepIndex) => loopStep > stepIndex || loopStep === 5;
+  const isDone = (stepIndex) => loopStep > stepIndex || loopStep === 6;
 
   const renderStep = (index, label) => (
     <div className={`loop-step ${isActive(index) ? "active" : ""} ${isDone(index) ? "done" : ""}`}>
@@ -20,6 +20,7 @@ export default function AgenticLoopStatus({ loopStep }) {
         {renderStep(2, "Feature divergence context -> Bedrock Component")}
         {renderStep(3, "Bedrock / Claude 3.5 Sonnet generates rule")}
         {renderStep(4, "Rule stored -> S3 Sandbox Validate")}
+        {renderStep(5, "[System] Security Policy Check & Signing")}
       </div>
     </div>
   );

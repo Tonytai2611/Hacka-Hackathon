@@ -10,9 +10,8 @@ function highlightCode(code) {
     .replace(/\\b(apply_rule|tx\\.get)\\b/g, '<span class="fn">$1</span>')
 }
 
-export default function RulePanel({ ruleGenerated, ruleDeployed, deployRule }) {
-  const ts = new Date().toISOString().slice(0, 19) + 'Z';
-  const ruleHtml = SIMULATED_RULE.replace('{ts}', ts);
+export default function RulePanel({ ruleGenerated, ruleDeployed, generatedRule, deployRule }) {
+  const ruleHtml = generatedRule;
   
   return (
     <>

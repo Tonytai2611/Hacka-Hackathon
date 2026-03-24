@@ -31,6 +31,7 @@ export default function App() {
               <RulePanel 
                 ruleGenerated={engine.state.ruleGenerated} 
                 ruleDeployed={engine.state.ruleDeployed} 
+                generatedRule={engine.state.generatedRule}
                 deployRule={engine.deployRuleAndRerun} 
               />
             </>

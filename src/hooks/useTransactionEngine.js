@@ -75,6 +75,20 @@ export function useTransactionEngine() {
   }, []);
 
   const runBaseline = () => {
+    // Clear any stale cached rule and re-fetch the latest from the backend.
+    localStorage.removeItem('ns_rule_code');
+    localStorage.removeItem('ns_rule_key');
+    fetch(CONFIG.GET_RULE_URL)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rule_code) {
+          localStorage.setItem('ns_rule_code', data.rule_code);
+          localStorage.setItem('ns_rule_key', data.rule_key || '');
+          console.log('[NeuroShield] Rule refreshed on demo start:', data.rule_key);
+        }
+      })
+      .catch(err => console.warn('[NeuroShield] Could not refresh rule:', err));
+
     setState(st => ({ ...st, phase: 1 }));
     let idx = 0;
     let pC = 0, fC = 0, fnC = 0, bC = 0;

@@ -18,11 +18,3 @@ export const CONFIG = {
   WITH_RULE_FPR: '1.09%',
   TX_INTERVAL_MS: 180,
 };
-
-export const SIMULATED_RULE = `# NeuroShield Agentic Rule - Auto-Generated
-# Trigger: FN >= 75 | Cohen's d: 2.41 | Timestamp: {ts}
-
-def detect_fraud(transaction: dict) -> bool:
-    if transaction.get('C10', 0) >= 1100.0 or transaction.get('C7', 0) >= 700.0 or transaction.get('C8', 0) >= 1100.0:
-        return True
-    return False`;

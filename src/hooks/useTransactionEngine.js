@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { CONFIG, SIMULATED_RULE } from '../constants/config';
+import { CONFIG } from '../constants/config';
 import { loadAndParseDataset } from '../lib/parseDataset';
 
 export function useTransactionEngine() {
@@ -32,6 +32,18 @@ export function useTransactionEngine() {
       setDataset(dataS);
       setIsLoaded(true);
     }).catch(e => console.error(e));
+
+    // Fetch the latest deployed rule from the backend and cache locally.
+    fetch(CONFIG.GET_RULE_URL)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rule_code) {
+          localStorage.setItem('ns_rule_code', data.rule_code);
+          localStorage.setItem('ns_rule_key', data.rule_key || '');
+          console.log('[NeuroShield] Rule synced from backend:', data.rule_key);
+        }
+      })
+      .catch(err => console.warn('[NeuroShield] Could not sync rule from backend:', err));
   }, []);
 
   const getTxResult = useCallback((item, ruleActive = false) => {
@@ -110,8 +122,10 @@ export function useTransactionEngine() {
       
       if (currentFn >= CONFIG.FN_TRIGGER) {
         clearInterval(fnInterval);
-        
-        let ruleCode = String(SIMULATED_RULE || "");
+
+        // Use the rule fetched from GET_RULE_URL (cached in localStorage)
+        const cachedRule = localStorage.getItem('ns_rule_code');
+        let ruleCode = cachedRule ? String(cachedRule) : '';
         
         if (CONFIG.USE_REAL_API) {
           try {
@@ -163,11 +177,12 @@ export function useTransactionEngine() {
   const deployRuleAndRerun = async () => {
     if (CONFIG.USE_REAL_API && state.generatedRule) {
       try {
-        console.log('Sending Rule Deployment to AWS...');
+        const ruleKey = localStorage.getItem('ns_rule_key') || '';
+        console.log('Deploying rule to AWS, key:', ruleKey);
         const res = await fetch(CONFIG.DEPLOY_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rule_code: state.generatedRule, action: 'deploy' })
+          body: JSON.stringify({ rule_code: state.generatedRule, rule_key: ruleKey, action: 'deploy' })
         });
         const d = await res.json();
         console.log('Deploy Result:', JSON.stringify(d, null, 2));

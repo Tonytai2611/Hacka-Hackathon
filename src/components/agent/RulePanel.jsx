@@ -1,4 +1,4 @@
-import { SIMULATED_RULE } from '../../constants/config';
+
 
 function highlightCode(code) {
   return code

@@ -3,6 +3,7 @@ export const CONFIG = {
   GATEKEEPER_URL: 'https://1y2xabeojj.execute-api.us-east-1.amazonaws.com/analyze-transactions',
   DEPLOY_URL: 'https://1y2xabeojj.execute-api.us-east-1.amazonaws.com/approve-rule',
   GET_RULE_URL: 'https://1y2xabeojj.execute-api.us-east-1.amazonaws.com/get-latest-rule',
+  TRIGGER_METRIC_URL: 'https://1y2xabeojj.execute-api.us-east-1.amazonaws.com/trigger-metric',
   
   PREFETCH_CHUNK: 20,
 

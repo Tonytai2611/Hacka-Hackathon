@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { CONFIG } from '../constants/config';
 import { loadAndParseDataset } from '../lib/parseDataset';
 
@@ -7,6 +7,7 @@ export function useTransactionEngine() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [timelineStats, setTimelineStats] = useState([]);
+  const rulePollingRef = useRef(null);  // holds the polling interval
   
   const [state, setState] = useState({
     phase: 0,
@@ -74,22 +75,70 @@ export function useTransactionEngine() {
     return { txId: item.id, score, cluster, result, badge, isCluster3, isCaughtByRule, isFraudByBase, time: new Date().toLocaleTimeString("en-US", { hour12: false }) };
   }, []);
 
+  const stopRulePolling = () => {
+    if (rulePollingRef.current) {
+      clearInterval(rulePollingRef.current);
+      rulePollingRef.current = null;
+      console.log('[NeuroShield] Rule polling stopped.');
+    }
+  };
+
   const runBaseline = () => {
-    // Clear any stale cached rule and re-fetch the latest from the backend.
-    localStorage.removeItem('ns_rule_code');
-    localStorage.removeItem('ns_rule_key');
+    setState(st => ({ ...st, phase: 1 }));
+
+    // 1. Grab the current rule_key as our baseline BEFORE triggering anything.
+    //    We compare against this to know when the backend has generated something NEW.
+    let baselineRuleKey = null;
     fetch(CONFIG.GET_RULE_URL)
       .then(res => res.json())
       .then(data => {
-        if (data && data.rule_code) {
-          localStorage.setItem('ns_rule_code', data.rule_code);
-          localStorage.setItem('ns_rule_key', data.rule_key || '');
-          console.log('[NeuroShield] Rule refreshed on demo start:', data.rule_key);
-        }
+        baselineRuleKey = (data && data.rule_key) || null;
+        console.log('[NeuroShield] Baseline rule_key recorded:', baselineRuleKey);
       })
-      .catch(err => console.warn('[NeuroShield] Could not refresh rule:', err));
+      .catch(() => { baselineRuleKey = null; });
 
-    setState(st => ({ ...st, phase: 1 }));
+    // Clear stale cache so the agent loop starts fresh.
+    localStorage.removeItem('ns_rule_code');
+    localStorage.removeItem('ns_rule_key');
+
+    // 2. Trigger CloudWatch metric so AWS starts generating a new rule.
+    if (CONFIG.USE_REAL_API) {
+      fetch(CONFIG.TRIGGER_METRIC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: CONFIG.FN_TRIGGER })
+      })
+        .then(res => res.json())
+        .then(d => console.log('[NeuroShield] Metric triggered:', d))
+        .catch(err => console.warn('[NeuroShield] Metric trigger failed:', err));
+    }
+
+    // 3. Poll every 5s until GET_RULE_URL returns a DIFFERENT rule_key than baseline.
+    stopRulePolling();
+    rulePollingRef.current = setInterval(() => {
+      fetch(CONFIG.GET_RULE_URL)
+        .then(res => res.json())
+        .then(data => {
+          const incoming = data && data.rule_code && data.rule_code.trim();
+          const incomingKey = (data && data.rule_key) || null;
+
+          if (!incoming || !incomingKey) {
+            console.log('[NeuroShield] No rule from backend yet, still polling...');
+            return;
+          }
+
+          // Compare by rule_key: only save if it's a genuinely new iteration.
+          if (incomingKey !== baselineRuleKey) {
+            localStorage.setItem('ns_rule_code', incoming);
+            localStorage.setItem('ns_rule_key', incomingKey);
+            console.log('[NeuroShield] New rule detected (key changed):', incomingKey);
+            stopRulePolling();
+          } else {
+            console.log('[NeuroShield] Rule unchanged (same key as baseline), still polling...');
+          }
+        })
+        .catch(err => console.warn('[NeuroShield] Rule polling error:', err));
+    }, 5000);
     let idx = 0;
     let pC = 0, fC = 0, fnC = 0, bC = 0;
     let currentTxs = [];
@@ -169,19 +218,39 @@ export function useTransactionEngine() {
         }
 
         let step = 0;
+        let waitingForRule = false;
         const loopInterval = setInterval(() => {
+          // If stuck waiting for rule at step 3, check localStorage.
+          if (waitingForRule) {
+            const freshRule = localStorage.getItem('ns_rule_code');
+            if (freshRule && freshRule.trim()) {
+              ruleCode = freshRule;
+              waitingForRule = false;
+              // Resume: advance to step 4
+              step = 4;
+              setState(st => ({ ...st, loopStep: step }));
+            }
+            // Otherwise just stay stuck — UI shows "..." on step 3.
+            return;
+          }
+
           if (step >= 5) {
             clearInterval(loopInterval);
+            const finalRule = localStorage.getItem('ns_rule_code') || ruleCode;
             setState(st => ({ 
               ...st, 
               loopStep: 6, 
               ruleGenerated: true, 
               phase: 3,
-              generatedRule: ruleCode.replace('{ts}', new Date().toISOString().slice(0, 19) + 'Z')
+              generatedRule: finalRule.replace('{ts}', new Date().toISOString().slice(0, 19) + 'Z')
             }));
           } else {
             step++;
             setState(st => ({ ...st, loopStep: step }));
+            // Pause after step 3 ("Bedrock generates rule") if no rule yet.
+            if (step === 3 && !localStorage.getItem('ns_rule_code')) {
+              waitingForRule = true;
+            }
           }
         }, CONFIG.USE_REAL_API ? 600 : 1200);
       }
@@ -283,6 +352,7 @@ export function useTransactionEngine() {
   };
 
   const resetDemo = () => {
+    stopRulePolling();
     setTransactions([]);
     setTimelineStats([]);
     setState({

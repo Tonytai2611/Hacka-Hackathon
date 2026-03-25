@@ -1,3 +1,17 @@
 package.json
 node_modules/
 package-lock.json
+
+# Debug / scratch scripts — never commit these
+inspect-s3.js
+list-s3.js
+restore-pointer.js
+test-api.js
+test-deploy.js
+test-aws-connection.js
+fetch-s3-rule.js
+
+# Scratch data files
+s3-results*.json
+s3-latest.json
+neuro-files.json

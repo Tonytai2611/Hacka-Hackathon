@@ -113,32 +113,59 @@ export function useTransactionEngine() {
         .catch(err => console.warn('[NeuroShield] Metric trigger failed:', err));
     }
 
-    // 3. Poll every 5s until GET_RULE_URL returns a DIFFERENT rule_key than baseline.
+    // 3. Wait 2 minutes, then poll every 5s.
+    //    Approve the rule only after fetching the SAME new rule_key 5 times in a row.
     stopRulePolling();
-    rulePollingRef.current = setInterval(() => {
-      fetch(CONFIG.GET_RULE_URL)
-        .then(res => res.json())
-        .then(data => {
-          const incoming = data && data.rule_code && data.rule_code.trim();
-          const incomingKey = (data && data.rule_key) || null;
+    const POLL_DELAY_MS = 2 * 60 * 1000;   // 2 minutes
+    const CONFIRM_COUNT = 5;                // must see same key this many times
+    let consecutiveMatches = 0;
+    let lastSeenKey = null;
 
-          if (!incoming || !incomingKey) {
-            console.log('[NeuroShield] No rule from backend yet, still polling...');
-            return;
-          }
+    const startPolling = () => {
+      rulePollingRef.current = setInterval(() => {
+        fetch(CONFIG.GET_RULE_URL)
+          .then(res => res.json())
+          .then(data => {
+            const incoming = data && data.rule_code && data.rule_code.trim();
+            const incomingKey = (data && data.rule_key) || null;
 
-          // Compare by rule_key: only save if it's a genuinely new iteration.
-          if (incomingKey !== baselineRuleKey) {
-            localStorage.setItem('ns_rule_code', incoming);
-            localStorage.setItem('ns_rule_key', incomingKey);
-            console.log('[NeuroShield] New rule detected (key changed):', incomingKey);
-            stopRulePolling();
-          } else {
-            console.log('[NeuroShield] Rule unchanged (same key as baseline), still polling...');
-          }
-        })
-        .catch(err => console.warn('[NeuroShield] Rule polling error:', err));
-    }, 5000);
+            if (!incoming || !incomingKey) {
+              consecutiveMatches = 0;
+              lastSeenKey = null;
+              console.log('[NeuroShield] No rule returned, resetting counter...');
+              return;
+            }
+
+            if (incomingKey === baselineRuleKey) {
+              consecutiveMatches = 0;
+              lastSeenKey = null;
+              console.log('[NeuroShield] Same as baseline, still waiting...');
+              return;
+            }
+
+            // It's a new key — track consecutive matches for stability.
+            if (incomingKey === lastSeenKey) {
+              consecutiveMatches++;
+              console.log(`[NeuroShield] New key match ${consecutiveMatches}/${CONFIRM_COUNT}: ${incomingKey}`);
+            } else {
+              consecutiveMatches = 1;
+              lastSeenKey = incomingKey;
+              console.log(`[NeuroShield] New key first seen (1/${CONFIRM_COUNT}): ${incomingKey}`);
+            }
+
+            if (consecutiveMatches >= CONFIRM_COUNT) {
+              localStorage.setItem('ns_rule_code', incoming);
+              localStorage.setItem('ns_rule_key', incomingKey);
+              console.log('[NeuroShield] Rule approved after 5 stable fetches:', incomingKey);
+              stopRulePolling();
+            }
+          })
+          .catch(err => console.warn('[NeuroShield] Rule polling error:', err));
+      }, 5000);
+    };
+
+    console.log('[NeuroShield] Polling will start in 2 minutes...');
+    setTimeout(startPolling, POLL_DELAY_MS);
     let idx = 0;
     let pC = 0, fC = 0, fnC = 0, bC = 0;
     let currentTxs = [];
@@ -220,17 +247,17 @@ export function useTransactionEngine() {
         let step = 0;
         let waitingForRule = false;
         const loopInterval = setInterval(() => {
-          // If stuck waiting for rule at step 3, check localStorage.
+          // If stuck waiting for rule at step 4 (S3 Validate), check localStorage.
           if (waitingForRule) {
             const freshRule = localStorage.getItem('ns_rule_code');
             if (freshRule && freshRule.trim()) {
               ruleCode = freshRule;
               waitingForRule = false;
-              // Resume: advance to step 4
-              step = 4;
+              // Resume: advance to step 5
+              step = 5;
               setState(st => ({ ...st, loopStep: step }));
             }
-            // Otherwise just stay stuck — UI shows "..." on step 3.
+            // Otherwise just stay stuck — UI shows "..." on step 4.
             return;
           }
 
@@ -247,8 +274,8 @@ export function useTransactionEngine() {
           } else {
             step++;
             setState(st => ({ ...st, loopStep: step }));
-            // Pause after step 3 ("Bedrock generates rule") if no rule yet.
-            if (step === 3 && !localStorage.getItem('ns_rule_code')) {
+            // Pause after step 4 ("Rule stored → S3 Sandbox Validate") if no rule yet.
+            if (step === 4 && !localStorage.getItem('ns_rule_code')) {
               waitingForRule = true;
             }
           }

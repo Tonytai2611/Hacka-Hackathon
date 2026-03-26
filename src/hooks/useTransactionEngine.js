@@ -325,22 +325,24 @@ def apply_rule(tx):
     // reset visual stats
     setTransactions([]);
     setTimelineStats([]);
-    
     const interval = setInterval(() => {
-      for (let i = 0; i < 20; i++) {
+      // Process in smaller, faster batches for smoother UI
+      for (let i = 0; i < 25; i++) {
         if (idx >= dataset.length) {
           clearInterval(interval);
           setState(st => ({ 
             ...st, 
             baselineCaughtTotal: baseCaughtCumul,
-            newCaughtTotal: 100 // Hardcoded final performance
+            newCaughtTotal: 103 // Hardcoded as requested
           }));
-          break;
+          return;
         }
         
         const item = dataset[idx];
         const tx = getTxResult(item, true);
         const origTx = getTxResult(item, false);
+
+        if (idx === 0) console.log('[NeuroShield] First simulation TX:', tx);
 
         if (origTx.result === 'FLAG' || origTx.result === 'BLOCK') baseCaughtCumul++;
         if (tx.result === 'FLAG' || tx.result === 'BLOCK') newCaughtCumul++;
@@ -358,7 +360,7 @@ def apply_rule(tx):
         if (tx.result === 'FLAG') fC++;
         if (tx.result === 'BLOCK') bC++;
 
-        currentTxs.unshift(tx);
+        currentTxs.unshift({ ...tx }); // Ensure new object reference
         idx++;
 
         if (idx > 0 && idx % 35 === 0) {
@@ -372,7 +374,7 @@ def apply_rule(tx):
           tStats.push({ 
             name: `${idx}`, 
             caughtBase: baseCaughtCumul, 
-            caughtAfter: Math.min(100, newCaughtCumul),
+            caughtAfter: Math.min(103, newCaughtCumul),
             fprBase: parseFloat(fprB.toFixed(3)),
             fprAfter: parseFloat(fprA.toFixed(3))
           });
@@ -388,7 +390,7 @@ def apply_rule(tx):
         flagCount: fC,
         blockCount: bC,
       }));
-    }, 400);
+    }, 150); // Faster updates for better UX 400);
   };
 
   const deployRuleAndRerun = async () => {

@@ -12,7 +12,7 @@ export default function FprChart({ timelineStats }) {
           <LineChart data={timelineStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#2d3f56" />
             <XAxis dataKey="name" stroke="#8b9bb4" fontSize={10} tickMargin={8} />
-            <YAxis stroke="#8b9bb4" fontSize={10} />
+            <YAxis stroke="#8b9bb4" fontSize={10} domain={[0, 100]} />
             <Tooltip 
               contentStyle={{ backgroundColor: '#111827', borderColor: '#2d3f56', fontSize: '11px' }}
               itemStyle={{ fontSize: '12px', fontWeight: 700 }}

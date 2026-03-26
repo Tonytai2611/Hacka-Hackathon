@@ -4,7 +4,6 @@ import Header from './components/layout/Header';
 import ControlBar from './components/layout/ControlBar';
 import TransactionFeed from './components/dashboard/TransactionFeed';
 import MetricsPanel from './components/dashboard/MetricsPanel';
-import BaselineImpact from './components/dashboard/BaselineImpact';
 import FalseNegativeMonitor from './components/agent/FalseNegativeMonitor';
 import AgenticLoopStatus from './components/agent/AgenticLoopStatus';
 import RulePanel from './components/agent/RulePanel';
@@ -46,7 +45,6 @@ export default function App() {
         {/* Right Column */}
         <div className="right-col">
           <MetricsPanel state={engine.state} />
-          <BaselineImpact ruleDeployed={engine.state.ruleDeployed} />
         </div>
       </div>
 

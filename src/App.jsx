@@ -9,6 +9,7 @@ import AgenticLoopStatus from './components/agent/AgenticLoopStatus';
 import RulePanel from './components/agent/RulePanel';
 import ComparisonChart from './components/charts/ComparisonChart';
 import FprChart from './components/charts/FprChart';
+import JsonRulePanel from './components/agent/JsonRulePanel';
 
 export default function App() {
   const engine = useTransactionEngine();
@@ -23,7 +24,7 @@ export default function App() {
         
         {/* Center Column */}
         <div className="center-col">
-          {engine.state.phase < 4 ? (
+          {engine.state.phase < 3 ? (
             <>
               <FalseNegativeMonitor fnCount={engine.state.fnCount} />
               <AgenticLoopStatus loopStep={engine.state.loopStep} />
@@ -36,6 +37,12 @@ export default function App() {
             </>
           ) : (
             <>
+              <RulePanel 
+                ruleGenerated={engine.state.ruleGenerated} 
+                ruleDeployed={engine.state.ruleDeployed} 
+                generatedRule={engine.state.generatedRule}
+                deployRule={engine.deployRuleAndRerun} 
+              />
               <ComparisonChart timelineStats={engine.timelineStats} />
               <FprChart timelineStats={engine.timelineStats} />
             </>
@@ -45,6 +52,12 @@ export default function App() {
         {/* Right Column */}
         <div className="right-col">
           <MetricsPanel state={engine.state} />
+          {engine.state.awsRuleJson && (
+            <JsonRulePanel 
+              metadata={engine.state.awsRuleJson} 
+              title="AWS PRODUCTION RULE" 
+            />
+          )}
         </div>
       </div>
 

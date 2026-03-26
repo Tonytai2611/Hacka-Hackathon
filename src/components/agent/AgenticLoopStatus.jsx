@@ -17,10 +17,9 @@ export default function AgenticLoopStatus({ loopStep }) {
       <div className="loop-steps">
         {renderStep(0, "Threshold breach detected (FN >= 75)")}
         {renderStep(1, "Lambda Analyzer: Cohen's d computation")}
-        {renderStep(2, "Feature divergence context -> Bedrock Component")}
-        {renderStep(3, "Bedrock / LLM generates rule")}
-        {renderStep(4, "Rule stored -> S3 Sandbox Validate")}
-        {renderStep(5, "[System] Security Policy Check & Signing")}
+        {renderStep(2, "Bedrock / LLM generates rule")}
+        {renderStep(3, "Rule stored -> S3 Sandbox Validate")}
+        {renderStep(4, "[System] Security Policy Check & Signing")}
       </div>
     </div>
   );

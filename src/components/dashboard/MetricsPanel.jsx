@@ -12,35 +12,43 @@ export default function MetricsPanel({ state }) {
         <div className="summary-item"><div className="summary-num" id="s-block" style={{color:"var(--safe)"}}>{state.blockCount}</div><div className="summary-lbl">BLOCKED</div></div>
       </div>
 
-      <div className="metric-block">
-        <div className="metric-block-title">SCENARIO A <span className="scenario-badge no-rule">WITHOUT RULE</span></div>
-        <div className="metric-row">
-          <span className="metric-name">Cluster 3 Misses</span>
-          <span className="metric-value bad">{state.fnCountNoRule}</span>
-        </div>
-        <div className="metric-row">
-          <span className="metric-name">Overall FPR</span>
-          <span className="metric-value">{computedFPR}</span>
-        </div>
-        <div className="metric-row">
-          <span className="metric-name">Fraud Caught</span>
-          <span className="metric-value bad">{state.ruleDeployed ? state.baselineCaughtTotal : Math.max(0, state.flagCount)}</span>
-        </div>
-      </div>
+      <div className="metric-block combined-scenarios">
+        <div className="metric-block-title">PERFORMANCE COMPARISON</div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '10px' }}>
+          {/* Baseline Side */}
+          <div className="scenario-side">
+            <div className="scenario-mini-label no-rule">BASELINE</div>
+            <div className="metric-row">
+              <span className="metric-name">P-1 Misses</span>
+              <span className="metric-value bad">{state.fnCountNoRule}</span>
+            </div>
+            <div className="metric-row">
+              <span className="metric-name">FPR</span>
+              <span className="metric-value">{computedFPR}</span>
+            </div>
+            <div className="metric-row">
+              <span className="metric-name">Caught</span>
+              <span className="metric-value bad">{state.ruleDeployed ? state.baselineCaughtTotal : Math.max(0, state.flagCount)}</span>
+            </div>
+          </div>
 
-      <div className="metric-block">
-        <div className="metric-block-title">SCENARIO B <span className="scenario-badge with-rule">WITH RULE</span></div>
-        <div className="metric-row">
-          <span className="metric-name">Cluster 3 Misses</span>
-          <span className="metric-value">{state.ruleDeployed ? 0 : "-"}</span>
-        </div>
-        <div className="metric-row">
-          <span className="metric-name">Overall FPR</span>
-          <span className="metric-value">{state.ruleDeployed ? CONFIG.WITH_RULE_FPR : "-"}</span>
-        </div>
-        <div className="metric-row">
-          <span className="metric-name">Fraud Caught</span>
-          <span className="metric-value good">{state.ruleDeployed ? state.newCaughtTotal : "0"}</span>
+          {/* Agentic Side */}
+          <div className="scenario-side" style={{ borderLeft: '1px solid #2d3f56', paddingLeft: '20px' }}>
+            <div className="scenario-mini-label with-rule">AGENTIC</div>
+            <div className="metric-row">
+              <span className="metric-name">P-2 Misses</span>
+              <span className="metric-value">{state.ruleDeployed ? 0 : "-"}</span>
+            </div>
+            <div className="metric-row">
+              <span className="metric-name">FPR</span>
+              <span className="metric-value">{state.ruleDeployed ? CONFIG.WITH_RULE_FPR : "-"}</span>
+            </div>
+            <div className="metric-row">
+              <span className="metric-name">Caught</span>
+              <span className="metric-value good">{state.ruleDeployed ? state.newCaughtTotal : (state.phase >= 3 ? state.newCaughtTotal : "0")}</span>
+            </div>
+          </div>
         </div>
       </div>
     </>

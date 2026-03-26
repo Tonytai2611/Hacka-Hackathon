@@ -14,21 +14,21 @@ export default function RulePanel({ ruleGenerated, ruleDeployed, generatedRule, 
   const ruleHtml = generatedRule;
   
   return (
-    <>
-      <div className="rule-panel">
+    <div className="rule-container-main" style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, minHeight: '350px', background: 'var(--rule-bg)', border: '1px solid var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+      <div className="rule-panel" style={{ flex: 1, padding: '12px 18px', display: 'flex', flexDirection: 'column' }}>
         <div className="rule-title">
           <span>BEDROCK-GENERATED RULE</span>
           <span className="rule-source" id="rule-source">
             {ruleGenerated ? "SOURCE: aws bedrock / claude-3-5-sonnet" : ""}
           </span>
         </div>
-        <div className="rule-code" id="rule-code" dangerouslySetInnerHTML={{ 
+        <div className="rule-code" id="rule-code" style={{ flex: 1, overflowY: 'auto' }} dangerouslySetInnerHTML={{ 
             __html: ruleGenerated ? highlightCode(ruleHtml) : '<span class="rule-placeholder">Awaiting agentic loop trigger...</span>' 
         }}>
         </div>
       </div>
 
-      <div className="deploy-panel">
+      <div className="deploy-panel" style={{ background: 'var(--bg3)', padding: '12px 18px', borderTop: '1px solid var(--border)' }}>
         <button 
           className={`deploy-btn ${ruleDeployed ? "deployed" : ruleGenerated ? "ready" : ""}`} 
           id="deploy-btn" 
@@ -49,6 +49,6 @@ export default function RulePanel({ ruleGenerated, ruleDeployed, generatedRule, 
           }
         </div>
       </div>
-    </>
+    </div>
   );
 }

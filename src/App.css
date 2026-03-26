@@ -350,7 +350,8 @@ header {
   font-size: 12px;
   line-height: 1.7;
   white-space: pre;
-  min-height: 0;
+  min-height: 100px;
+  color: #e6edf3;
 }
 .rule-code .kw  { color: #ff79c6; }
 .rule-code .fn  { color: #50fa7b; }

@@ -11,11 +11,7 @@ export default function ControlBar({ state, runBaseline, startAgentLoop, deployR
           NEXT: RUN ANOMALY DETECTION
         </button>
       )}
-      {state.phase === 3 && (
-        <button className="ctrl-btn running" onClick={deployRuleAndRerun}>
-          DEPLOY RULE AND RE-RUN DATASET
-        </button>
-      )}
+
       {state.phase === 4 && (
         <button className="ctrl-btn" disabled={true} style={{borderColor:"var(--safe)", color:"var(--safe)"}}>
           [OK] EVALUATION COMPLETE

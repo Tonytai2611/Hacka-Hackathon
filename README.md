@@ -4,6 +4,10 @@
 [![React](https://img.shields.io/badge/React-18-blue?logo=react)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-Dark--Theme-purple?logo=vite)](https://vitejs.dev/)
 
+demo link: https://main.d2n249xvuxe4ot.amplifyapp.com/?fbclid=IwY2xjawQ0D-FleHRuA2FlbQIxMABicmlkETFualNKU25IVzByc3Fwb2hCc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHj0vV2AWvIf_mNhmjULYqNjnImVfEXFmVAPnR9YxLg3bVr181eE68lYTC43B_aem_tZlUJ2v1RWmSMvg66CSgvA
+
+slide: https://www.canva.com/design/DAHE3o8oji8/noT3vDzADyinR9vpPOb0aw/edit
+
 ## Executive Summary
 Fraud detection systems built on static machine learning models share a fundamental weakness, struggling to adapt to rapidly evolving adversarial tactics. Furthermore, extreme class imbalance in traditional fraud environments significantly complicates realistic modeling. Consequently, as fraudsters continuously modify their evasion techniques, these static models experience rapid performance degradation known as concept drift. 
 

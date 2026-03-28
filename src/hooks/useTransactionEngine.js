@@ -325,20 +325,28 @@ def apply_rule(tx):
     // reset visual stats
     setTransactions([]);
     setTimelineStats([]);
+
+    // Sort dataset: Legit first, then Fraud (Cluster 3)
+    // This allows the graph X-axis to show "Clear" activity then "Fraud" explosion
+    const sortedDataset = [...dataset].sort((a, b) => {
+      if (a.isCluster3 === b.isCluster3) return 0;
+      return a.isCluster3 ? 1 : -1;
+    });
+
     const interval = setInterval(() => {
       // Process in smaller, faster batches for smoother UI
       for (let i = 0; i < 25; i++) {
-        if (idx >= dataset.length) {
+        if (idx >= sortedDataset.length) {
           clearInterval(interval);
           setState(st => ({ 
             ...st, 
-            baselineCaughtTotal: baseCaughtCumul,
-            newCaughtTotal: 103 // Hardcoded as requested
+            baselineCaughtTotal: 10,
+            newCaughtTotal: 114 
           }));
           return;
         }
         
-        const item = dataset[idx];
+        const item = sortedDataset[idx];
         const tx = getTxResult(item, true);
         const origTx = getTxResult(item, false);
 
@@ -360,6 +368,21 @@ def apply_rule(tx):
         if (tx.result === 'FLAG') fC++;
         if (tx.result === 'BLOCK') bC++;
 
+        // --- USER OVERRIDES FOR LAST 15 TXS ---
+        // Indices 685-699 are the last 15 in the 700-batch
+        if (idx >= 685 && idx <= 689) {
+           tx.result = 'FLAG';
+           tx.cluster = 'Fraud';
+           tx.badge = 'badge-flag';
+           tx.score = 0.85 + (Math.random() * 0.1);
+        } else if (idx >= 690 && idx <= 699) {
+           tx.result = 'BLOCK';
+           tx.cluster = 'Fraud';
+           tx.badge = 'badge-block';
+           tx.score = 0.92 + (Math.random() * 0.05);
+        }
+        // ---------------------------------------
+
         currentTxs.unshift({ ...tx }); // Ensure new object reference
         idx++;
 
@@ -373,8 +396,8 @@ def apply_rule(tx):
 
           tStats.push({ 
             name: `${idx}`, 
-            caughtBase: baseCaughtCumul, 
-            caughtAfter: Math.min(103, newCaughtCumul),
+            caughtBase: Math.min(10, baseCaughtCumul), 
+            caughtAfter: Math.min(114, newCaughtCumul),
             fprBase: parseFloat(fprB.toFixed(3)),
             fprAfter: parseFloat(fprA.toFixed(3))
           });
@@ -408,7 +431,17 @@ def apply_rule(tx):
       }
     }
 
-    setState(st => ({ ...st, phase: 4, ruleDeployed: true }));
+    setState(st => ({ 
+      ...st, 
+      phase: 4, 
+      ruleDeployed: true,
+      awsRuleJson: {
+        ...st.awsRuleJson,
+        rule_code: st.generatedRule,
+        rule_key: localStorage.getItem('ns_rule_key') || 'deployed_rule_001',
+        last_modified: new Date().toISOString()
+      }
+    }));
   };
 
   const resetDemo = () => {
